@@ -5,6 +5,7 @@ using System.Data;
 using System.Drawing;
 using System.Linq;
 using System.Text;
+using System.Text.Json;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
@@ -15,9 +16,13 @@ namespace AdminClient
         private SplitContainer splitContainer;
         private ListBox listBox;
         private TabControl tabControl;
-        private List<string> items = new List<string> { "Item 1", "Item 2", "Item 3" };
+
+        private List<ClientLevel> items = new List<ClientLevel>();
+       
         public Table()
         {
+            string jsonString = File.ReadAllText("Clients.json");
+            items = JsonSerializer.Deserialize<List<ClientLevel>>(jsonString);
             this.splitContainer = new SplitContainer();
             this.listBox = new ListBox();
             this.tabControl = new TabControl();
@@ -57,31 +62,24 @@ namespace AdminClient
             tabControl.TabPages.Clear();
 
             // Создаём новые вкладки в зависимости от выбранного элемента
-            if (selectedItem == "Item 1")
+            foreach (var item in items)
             {
-                AddTabPage("Page 1", "Content for Item 1 - Page 1");
-                AddTabPage("Page 2", "Content for Item 1 - Page 2");
-            }
-            else if (selectedItem == "Item 2")
-            {
-                AddTabPage("Page A", "Content for Item 2 - Page A");
-                AddTabPage("Page B", "Content for Item 2 - Page B");
-            }
-            else if (selectedItem == "Item 3")
-            {
-                AddTabPage("Page X", "Content for Item 3 - Page X");
+                if (selectedItem == item.ClientName)
+                {
+                    foreach (var day in item.Days) 
+                    {
+                        AddTabPage(day.Day.ToString(), day.Data );
+                    }
+                }
             }
         }
-        private void AddTabPage(string title, string content)
+        private void AddTabPage(string title, List<DataLevel> data)
         {
             var tabPage = new TabPage(title);
-            var label = new Label
-            {
-                Text = content,
-                Dock = DockStyle.Fill,
-                TextAlign = System.Drawing.ContentAlignment.MiddleCenter
-            };
-            tabPage.Controls.Add(label);
+            DataGridView grid = new DataGridView();
+            grid.Dock = DockStyle.Fill;
+            //функция для пополнения data grid
+            tabPage.Controls.Add(grid);
             tabControl.TabPages.Add(tabPage);
         }
         private void LoadListBoxItems()
@@ -89,7 +87,7 @@ namespace AdminClient
             // Добавляем элементы в ListBox из списка
             foreach (var item in items)
             {
-                listBox.Items.Add(item);
+                listBox.Items.Add(item.ClientName);
             }
         }
         void Table_Load(object sender, EventArgs e)
