@@ -10,11 +10,10 @@ namespace AdminClient
     {
         public DateOnly Day { get; set; }
         public List<DataLevel> Data { get; set; }
-        public DayLevel() 
+        public DayLevel()
         {
             List<DataLevel> Data = new List<DataLevel>();
         }
-
         public DayLevel(List<DataLevel> data)
         {
             this.Day = DateOnly.FromDateTime(DateTime.Now);
@@ -31,7 +30,7 @@ namespace AdminClient
                 // Объединить данные
                 foreach (var newDay in newDayLevel.Data)
                 {
-                    // Найти существующий DayLevel с той же датой
+                    // Найти существующий DayLevel с той же путем
                     var existingData = existingDay.Data.FirstOrDefault(d => d.Path == newDay.Path);
 
                     if (existingData != null)

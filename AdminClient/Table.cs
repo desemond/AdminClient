@@ -18,13 +18,10 @@ namespace AdminClient
         private ListBox listBox;
         private TabControl tabControl;
 
-        private List<ClientLevel> items = new List<ClientLevel>();
        
         public Table()
         {
-            string jsonString = File.ReadAllText("Clients.json");
-            int size = jsonString.Length;
-            items = JsonConvert.DeserializeObject <List<ClientLevel>>(jsonString);
+            //items = ClientLevel. ReadClientLevelsFromFile("Clients.json");
             this.splitContainer = new SplitContainer();
             this.listBox = new ListBox();
             this.tabControl = new TabControl();
@@ -64,7 +61,7 @@ namespace AdminClient
             tabControl.TabPages.Clear();
 
             // Создаём новые вкладки в зависимости от выбранного элемента
-            foreach (var item in items)
+            foreach (var item in Storage.AllClients)
             {
                 if (selectedItem == item.ClientName)
                 {
@@ -82,8 +79,10 @@ namespace AdminClient
             DataTable fileTable = new DataTable();
 
             // Устанавливаем колонки для таблицы реестра
+            registryTable.Columns.Add("Path");
             registryTable.Columns.Add("Registry Key");
             registryTable.Columns.Add("Value");
+            
 
             // Устанавливаем колонки для таблицы файлов
             fileTable.Columns.Add("String Path");
@@ -97,6 +96,10 @@ namespace AdminClient
             {
                 fileTable.Columns.Add(checkTime.ToString());
             }
+            foreach (var checkTime in day.Data[0].CheckTime)
+            {
+                registryTable.Columns.Add(checkTime.ToString());
+            }
 
             // Заполняем таблицы
             foreach (var data in day.Data)
@@ -107,30 +110,36 @@ namespace AdminClient
                     foreach (var kvp in data.RegistryValues)
                     {
                         DataRow registryRow = registryTable.NewRow();
+                        registryRow["Path"] = data.Path;
                         registryRow["Registry Key"] = kvp.Key;
                         registryRow["Value"] = kvp.Value;
+
                         registryTable.Rows.Add(registryRow);
                     }
                 }
 
                 // Обработка файлов
                 DataRow fileRow = fileTable.NewRow();
-                fileRow["String Path"] = data.Path;
-                fileRow["Size"] = string.Join("; \n\r", data.Size);
-                fileRow["Type"] = data.Type;
-                fileRow["Quantity"] = data.Quantity;
-                fileRow["LastWriteTime"] = string.Join("; \n\r", data.LastWriteTime);
-
-                // Установка значений статуса для каждой CheckTime
-                for (int j = 0; j < data.CheckTime.Count; j++)
+                if (data.Type != "registry")
                 {
-                    if (data.CheckTime.Count == data.Status.Count)
-                    {
-                        fileRow[data.CheckTime[j].ToString()] = data.Status[j];
-                    }
-                }
+                    fileRow["String Path"] = data.Path;
+                    fileRow["Size"] = string.Join("; \n\r", data.Size);
+                    fileRow["Type"] = data.Type;
+                    fileRow["Quantity"] = data.Quantity;
+                    fileRow["LastWriteTime"] = string.Join("; \n\r", data.LastWriteTime);
 
-                fileTable.Rows.Add(fileRow);
+                    // Установка значений статуса для каждой CheckTime
+                    for (int j = 0; j < data.CheckTime.Count; j++)
+                    {
+                        if (data.CheckTime.Count == data.Status.Count)
+                        {
+                            fileRow[data.CheckTime[j].ToString()] = data.Status[j];
+                        }
+                    }
+
+                    fileTable.Rows.Add(fileRow);
+                }
+                
             }
 
             return (registryTable, fileTable); // Возвращаем обе таблицы в виде кортежа
@@ -173,7 +182,7 @@ namespace AdminClient
         private void LoadListBoxItems()
         {
             // Добавляем элементы в ListBox из списка
-            foreach (var item in items)
+            foreach (var item in Storage.AllClients)
             {
                 listBox.Items.Add(item.ClientName);
             }
