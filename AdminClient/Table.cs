@@ -22,9 +22,7 @@ namespace AdminClient
        
         public Table()
         {
-            string jsonString = File.ReadAllText("Clients.json");
-            int size = jsonString.Length;
-            items = JsonConvert.DeserializeObject <List<ClientLevel>>(jsonString);
+            items = ClientLevel. ReadClientLevelsFromFile("Clients.json");
             this.splitContainer = new SplitContainer();
             this.listBox = new ListBox();
             this.tabControl = new TabControl();
