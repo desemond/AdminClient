@@ -260,7 +260,7 @@ namespace AdminClient
         {
 
             string message = "Set-Timer " + text7.Text; 
-            if ()
+           // if ()
             if (Storage.currentWebSocket.State == WebSocketState.Open)
             {
                 await SocketExtensions.SendTextMessageAsync(Storage.currentWebSocket, message);
